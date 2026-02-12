@@ -45,7 +45,38 @@ async function init() {
     return;
   }
 
-  // Check localStorage for existing session FIRST (handles refresh)
+  // Check for room code in URL — this ALWAYS means a new join intent
+  const params = new URLSearchParams(window.location.search);
+  const urlRoom = params.get('room');
+
+  if (urlRoom) {
+    // New room link — clear any old session so we start fresh
+    const saved = localStorage.getItem('sangame_session');
+    if (saved) {
+      try {
+        const session = JSON.parse(saved);
+        // Only keep old session if it's for the SAME room
+        if (session.roomCode === urlRoom.toUpperCase() && session.playerSlot && session.playerName) {
+          console.log('[Sangame] Resuming same room from URL:', session.roomCode);
+          roomCode = session.roomCode;
+          playerSlot = session.playerSlot;
+          playerName = session.playerName;
+          listenToRoom(roomCode, handleRoomUpdate);
+          setupPresence(roomCode, playerSlot);
+          return;
+        }
+      } catch (e) {
+        // ignore
+      }
+      // Different room — clear old session
+      localStorage.removeItem('sangame_session');
+    }
+    document.getElementById('join-code-input').value = urlRoom.toUpperCase();
+    showScreen('screen-join');
+    return;
+  }
+
+  // No URL param — check localStorage for session resume (handles refresh)
   const saved = localStorage.getItem('sangame_session');
   if (saved) {
     try {
@@ -55,7 +86,6 @@ async function init() {
         roomCode = session.roomCode;
         playerSlot = session.playerSlot;
         playerName = session.playerName;
-        // Rejoin the room
         listenToRoom(roomCode, handleRoomUpdate);
         setupPresence(roomCode, playerSlot);
         return;
@@ -65,16 +95,7 @@ async function init() {
     }
   }
 
-  // No saved session — check for room code in URL (new join)
-  const params = new URLSearchParams(window.location.search);
-  const urlRoom = params.get('room');
-
-  if (urlRoom) {
-    document.getElementById('join-code-input').value = urlRoom.toUpperCase();
-    showScreen('screen-join');
-  } else {
-    showScreen('screen-landing');
-  }
+  showScreen('screen-landing');
 }
 
 function saveSession() {
