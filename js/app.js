@@ -377,14 +377,9 @@ function processRound(data, roundIndex) {
 
   // CASE 1: Both answered -> show reveal
   if (myAnswer !== null && theirAnswer !== null) {
-    if (!isShowingReveal || (round.type === "guessMyAnswer" && round.correct != null && !isShowingReveal)) {
+    if (!isShowingReveal) {
       isShowingReveal = true;
       console.log('[Sangame] Both answered, showing reveal');
-      showRevealScreen(round, question, data, roundIndex);
-    }
-    // For guess rounds waiting for judgment, re-render when judgment arrives
-    if (isShowingReveal && round.type === "guessMyAnswer" && round.correct != null) {
-      // Judgment arrived - update the reveal
       showRevealScreen(round, question, data, roundIndex);
     }
     return;
@@ -500,17 +495,23 @@ async function showRevealScreen(round, question, data, roundIndex) {
   if (nextBtn) setupNextButton(nextBtn, roundIndex, totalRounds);
 }
 
-function setupNextButton(nextBtn, roundIndex, totalRounds) {
-  if (!nextBtn) return;
-  nextBtn.classList.remove('hidden');
-  const newBtn = nextBtn.cloneNode(true);
-  nextBtn.parentNode.replaceChild(newBtn, nextBtn);
+function setupNextButton(ignoredRef, roundIndex, totalRounds) {
+  // Always grab the button fresh from the DOM to avoid stale references
+  const btn = document.querySelector('#screen-reveal .reveal-next');
+  if (!btn) {
+    console.warn('[Sangame] Next button not found in DOM');
+    return;
+  }
+
+  btn.classList.remove('hidden');
+  btn.disabled = false;
 
   const isLastRound = roundIndex >= totalRounds - 1;
-  newBtn.textContent = isLastRound ? 'See Results' : 'Next Round';
+  btn.textContent = isLastRound ? 'See Results' : 'Next Round';
 
-  newBtn.addEventListener('click', async () => {
-    newBtn.disabled = true;
+  // Remove old listener by replacing onclick
+  btn.onclick = async () => {
+    btn.disabled = true;
     try {
       if (isLastRound) {
         const scoring = calculateScoring(Object.values(roomData.rounds || {}));
@@ -521,9 +522,9 @@ function setupNextButton(nextBtn, roundIndex, totalRounds) {
       }
     } catch (e) {
       showToast('Something went wrong. Please try again.');
-      newBtn.disabled = false;
+      btn.disabled = false;
     }
-  });
+  };
 }
 
 function showSummaryScreen(scoring) {
