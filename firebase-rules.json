@@ -1,0 +1,30 @@
+{
+  "rules": {
+    "rooms": {
+      "$roomCode": {
+        ".read": "auth != null",
+        ".write": "auth != null && (!data.exists() || data.child('players/player1/uid').val() === auth.uid || data.child('players/player2/uid').val() === auth.uid)",
+        "players": {
+          "player1": {
+            ".validate": "newData.hasChildren(['uid', 'name'])"
+          },
+          "player2": {
+            ".validate": "newData.hasChildren(['uid', 'name'])"
+          }
+        },
+        "rounds": {
+          "$roundIndex": {
+            "answers": {
+              "player1": {
+                ".write": "auth.uid === root.child('rooms/' + $roomCode + '/players/player1/uid').val()"
+              },
+              "player2": {
+                ".write": "auth.uid === root.child('rooms/' + $roomCode + '/players/player2/uid').val()"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

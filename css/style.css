@@ -1,0 +1,1003 @@
+/* ============================================================
+   SANGAME - Design System
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-start: #FFF5F5;
+  --bg-end: #FFF0E6;
+  --primary: #E8636F;
+  --primary-light: #FADADD;
+  --primary-dark: #C9434F;
+  --secondary: #7C5CBF;
+  --secondary-light: #E8DFFF;
+  --accent: #F4A261;
+  --text-primary: #2D2D2D;
+  --text-secondary: #6B6B6B;
+  --text-light: #999;
+  --card-bg: #FFFFFF;
+  --success: #6BCB77;
+  --surface: rgba(255, 255, 255, 0.85);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.12);
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================================
+   Reset & Base
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+  color: var(--text-primary);
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Background decoration */
+body::before {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 20%, rgba(232, 99, 111, 0.06) 0%, transparent 50%),
+              radial-gradient(circle at 70% 80%, rgba(124, 92, 191, 0.06) 0%, transparent 50%),
+              radial-gradient(circle at 50% 50%, rgba(244, 162, 97, 0.04) 0%, transparent 50%);
+  animation: bgFloat 20s ease-in-out infinite;
+  z-index: -1;
+  pointer-events: none;
+}
+
+@keyframes bgFloat {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(2%, 1%) rotate(1deg); }
+  66% { transform: translate(-1%, -2%) rotate(-1deg); }
+}
+
+/* ============================================================
+   Layout
+   ============================================================ */
+
+.app-container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* ============================================================
+   Screens
+   ============================================================ */
+
+.screen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.screen-active {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.screen-exit {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* ============================================================
+   Typography
+   ============================================================ */
+
+h1, h2, h3 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.app-title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.app-tagline {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  font-family: 'Playfair Display', serif;
+  margin-bottom: 48px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 32px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  min-height: 48px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  box-shadow: 0 4px 16px rgba(232, 99, 111, 0.3);
+}
+
+.btn-primary:hover:not(:disabled) {
+  box-shadow: 0 6px 24px rgba(232, 99, 111, 0.4);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 2px solid var(--primary-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--primary);
+  background: white;
+}
+
+.btn-match {
+  background: var(--success);
+  color: white;
+  padding: 12px 24px;
+  width: auto;
+}
+
+.btn-miss {
+  background: var(--text-light);
+  color: white;
+  padding: 12px 24px;
+  width: auto;
+}
+
+.btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+/* ============================================================
+   Cards
+   ============================================================ */
+
+.card {
+  background: var(--surface);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  width: 100%;
+}
+
+/* ============================================================
+   Input Fields
+   ============================================================ */
+
+.input-field {
+  width: 100%;
+  padding: 14px 18px;
+  border: 2px solid var(--primary-light);
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  color: var(--text-primary);
+  background: white;
+  transition: border-color var(--transition);
+  outline: none;
+}
+
+.input-field:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(232, 99, 111, 0.15);
+}
+
+.input-field::placeholder {
+  color: var(--text-light);
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.input-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ============================================================
+   Landing Screen
+   ============================================================ */
+
+#screen-landing {
+  text-align: center;
+  gap: 0;
+}
+
+.landing-heart {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* ============================================================
+   Create / Wait Screen
+   ============================================================ */
+
+.screen-subtitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.room-code {
+  font-family: 'DM Sans', monospace;
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--primary);
+  background: var(--primary-light);
+  padding: 16px 32px;
+  border-radius: var(--radius-md);
+  margin: 16px 0;
+  text-align: center;
+}
+
+.room-link {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  word-break: break-all;
+  text-align: center;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: var(--radius-sm);
+}
+
+/* ============================================================
+   Waiting Indicator
+   ============================================================ */
+
+.waiting-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.waiting-indicator.hidden {
+  display: none;
+}
+
+.waiting-dots {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.waiting-dots span {
+  width: 6px;
+  height: 6px;
+  background: var(--primary);
+  border-radius: 50%;
+  animation: dotPulse 1.4s ease-in-out infinite;
+}
+
+.waiting-dots span:nth-child(2) { animation-delay: 0.2s; }
+.waiting-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotPulse {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+/* ============================================================
+   Lobby Screen
+   ============================================================ */
+
+.lobby-greeting {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.75rem;
+  text-align: center;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.lobby-players {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.player-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.player-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+}
+
+.player-avatar.p1 {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+}
+
+.player-avatar.p2 {
+  background: linear-gradient(135deg, var(--secondary), #9B7FD4);
+}
+
+.player-badge-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.lobby-heart {
+  font-size: 1.5rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.lobby-description {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 32px;
+  max-width: 340px;
+}
+
+/* ============================================================
+   Round Intro Screen
+   ============================================================ */
+
+#screen-round-intro {
+  text-align: center;
+}
+
+.intro-round-number {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 16px;
+}
+
+.intro-type-icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.intro-type-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   Round Indicator (top bar)
+   ============================================================ */
+
+#round-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  padding: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+#round-indicator.hidden {
+  display: none;
+}
+
+/* ============================================================
+   This or That Screen
+   ============================================================ */
+
+.round-question {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  text-align: center;
+  margin-bottom: 32px;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.option-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+}
+
+.option-card {
+  background: var(--card-bg);
+  border: 3px solid transparent;
+  border-radius: var(--radius-md);
+  padding: 28px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.option-card:hover:not(.selected):not(.disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-light);
+}
+
+.option-card:active:not(.selected):not(.disabled) {
+  transform: scale(0.97);
+}
+
+.option-card.selected {
+  border-color: var(--primary);
+  background: linear-gradient(135deg, var(--primary-light) 0%, white 100%);
+  box-shadow: 0 4px 20px rgba(232, 99, 111, 0.2);
+  transform: scale(1.03);
+}
+
+.option-card.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.option-emoji {
+  font-size: 2.5rem;
+}
+
+.option-text {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+/* ============================================================
+   Would You Rather Screen
+   ============================================================ */
+
+.wyr-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.wyr-card {
+  background: var(--card-bg);
+  border: 3px solid transparent;
+  border-radius: var(--radius-md);
+  padding: 24px;
+  cursor: pointer;
+  transition: all var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.wyr-card:hover:not(.selected):not(.disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-light);
+}
+
+.wyr-card.selected {
+  border-color: var(--primary);
+  background: linear-gradient(135deg, var(--primary-light) 0%, white 100%);
+  box-shadow: 0 4px 20px rgba(232, 99, 111, 0.2);
+}
+
+.wyr-card.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.wyr-text {
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin-bottom: 6px;
+}
+
+.wyr-desc {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* ============================================================
+   Deep Question Screen
+   ============================================================ */
+
+.deep-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 16px;
+  border: 2px solid var(--primary-light);
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  color: var(--text-primary);
+  background: white;
+  resize: vertical;
+  outline: none;
+  transition: border-color var(--transition);
+  margin-bottom: 16px;
+}
+
+.deep-textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(232, 99, 111, 0.15);
+}
+
+.deep-textarea:disabled {
+  background: #f9f9f9;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   Guess Answer Screen
+   ============================================================ */
+
+.guess-role {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.guess-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  width: 100%;
+}
+
+.guess-option-btn {
+  padding: 12px 20px;
+  border: 2px solid var(--primary-light);
+  border-radius: 999px;
+  background: white;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  color: var(--text-primary);
+}
+
+.guess-option-btn:hover:not(.selected):not(.disabled) {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.guess-option-btn.selected {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.guess-option-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.guess-free-text {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.guess-free-text.hidden,
+.guess-options.hidden {
+  display: none;
+}
+
+/* ============================================================
+   Reveal Screen
+   ============================================================ */
+
+.reveal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.reveal-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.reveal-card {
+  background: var(--card-bg);
+  border-radius: var(--radius-md);
+  padding: 20px 16px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  border: 3px solid transparent;
+  transition: all 0.5s ease;
+  animation: revealIn 0.5s ease forwards;
+}
+
+@keyframes revealIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) rotateY(10deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotateY(0);
+  }
+}
+
+.reveal-card:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.reveal-card.match {
+  border-color: var(--success);
+  background: linear-gradient(135deg, #f0fff0 0%, white 100%);
+}
+
+.reveal-card.no-match {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, #fff8f0 0%, white 100%);
+}
+
+.reveal-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.reveal-answer {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.reveal-message {
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 24px;
+  transition: all var(--transition);
+}
+
+.reveal-match {
+  color: var(--success);
+}
+
+.reveal-miss {
+  color: var(--accent);
+}
+
+.reveal-deep {
+  color: var(--secondary);
+  font-style: italic;
+  font-family: 'Playfair Display', serif;
+}
+
+.judgment-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+/* ============================================================
+   Summary Screen
+   ============================================================ */
+
+.summary-score {
+  font-family: 'Playfair Display', serif;
+  font-size: 5rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-align: center;
+  margin: 16px 0;
+  line-height: 1;
+}
+
+.summary-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.summary-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 24px 0;
+  width: 100%;
+}
+
+.summary-stat {
+  background: var(--surface);
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.summary-highlight {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  text-align: center;
+  font-weight: 500;
+}
+
+.summary-highlight.hidden {
+  display: none;
+}
+
+.summary-closing {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  text-align: center;
+  color: var(--text-primary);
+  margin: 24px 0;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* ============================================================
+   Toast
+   ============================================================ */
+
+.toast {
+  position: fixed;
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  z-index: 1000;
+  transition: bottom 0.3s ease;
+  white-space: nowrap;
+  box-shadow: var(--shadow-lg);
+}
+
+.toast-show {
+  bottom: 32px;
+}
+
+.toast-error {
+  background: #FF6B6B;
+  color: white;
+}
+
+.toast-success {
+  background: var(--success);
+  color: white;
+}
+
+/* ============================================================
+   Utility
+   ============================================================ */
+
+.hidden {
+  display: none !important;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mb-16 {
+  margin-bottom: 16px;
+}
+
+.mb-24 {
+  margin-bottom: 24px;
+}
+
+.mt-auto {
+  margin-top: auto;
+}
+
+.w-full {
+  width: 100%;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+
+@media (max-width: 400px) {
+  .app-title {
+    font-size: 2.5rem;
+  }
+
+  .room-code {
+    font-size: 2rem;
+    padding: 12px 24px;
+  }
+
+  .option-grid {
+    gap: 10px;
+  }
+
+  .option-card {
+    padding: 20px 12px;
+  }
+
+  .option-emoji {
+    font-size: 2rem;
+  }
+
+  .summary-score {
+    font-size: 4rem;
+  }
+
+  .reveal-cards {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+@media (min-width: 768px) {
+  .app-container {
+    padding: 40px 24px;
+  }
+
+  .round-question {
+    font-size: 1.75rem;
+  }
+}
+
+/* ============================================================
+   Scrollbar (WebKit)
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-light);
+  border-radius: 4px;
+}
+
+/* ============================================================
+   Selection
+   ============================================================ */
+
+::selection {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+}

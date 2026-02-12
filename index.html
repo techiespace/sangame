@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sangame - A Game of Questions & Connection</title>
+  <meta name="description" content="A two-player game to get to know each other through fun questions, deep conversations, and playful guessing.">
+
+  <!-- Open Graph for nice link previews in WhatsApp/iMessage -->
+  <meta property="og:title" content="Sangame - Let's Play!">
+  <meta property="og:description" content="I've created a fun game for us to get to know each other. Tap to join!">
+  <meta property="og:type" content="website">
+
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Confetti library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- Round Indicator (fixed top bar) -->
+    <div id="round-indicator" class="hidden"></div>
+
+    <!-- ===== SCREEN: Landing ===== -->
+    <section id="screen-landing" class="screen screen-active">
+      <div class="landing-heart">&#10084;&#65039;</div>
+      <h1 class="app-title">Sangame</h1>
+      <p class="app-tagline">A game of questions, connection,<br>and maybe a little magic</p>
+      <div class="btn-group">
+        <button id="btn-create" class="btn btn-primary">Create a Room</button>
+        <button id="btn-join" class="btn btn-secondary">Join a Room</button>
+      </div>
+    </section>
+
+    <!-- ===== SCREEN: Create Room ===== -->
+    <section id="screen-create" class="screen">
+      <h2 class="screen-subtitle">Create a Room</h2>
+      <div class="input-group">
+        <label class="input-label" for="create-name-input">Your Name</label>
+        <input id="create-name-input" class="input-field" type="text" placeholder="Enter your name" maxlength="30" autocomplete="off">
+      </div>
+      <button id="btn-create-submit" class="btn btn-primary">Create Room</button>
+    </section>
+
+    <!-- ===== SCREEN: Waiting for Partner ===== -->
+    <section id="screen-waiting" class="screen">
+      <h2 class="screen-subtitle">Your Room is Ready!</h2>
+      <p style="color: var(--text-secondary); text-align: center; margin-bottom: 12px;">Share this code or link with your partner:</p>
+      <div class="room-code" id="room-code-display"></div>
+      <div class="room-link" id="room-link-display"></div>
+      <button id="btn-copy-link" class="btn btn-secondary mb-24">Copy Link</button>
+      <div class="waiting-indicator">
+        <span>Waiting for your partner</span>
+        <div class="waiting-dots">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SCREEN: Join Room ===== -->
+    <section id="screen-join" class="screen">
+      <h2 class="screen-subtitle">Join a Room</h2>
+      <div class="input-group">
+        <label class="input-label" for="join-code-input">Room Code</label>
+        <input id="join-code-input" class="input-field" type="text" placeholder="Enter 6-character code" maxlength="6" style="text-transform: uppercase; letter-spacing: 0.2em; text-align: center; font-size: 1.25rem;" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label class="input-label" for="join-name-input">Your Name</label>
+        <input id="join-name-input" class="input-field" type="text" placeholder="Enter your name" maxlength="30" autocomplete="off">
+      </div>
+      <button id="btn-join-submit" class="btn btn-primary">Join Room</button>
+    </section>
+
+    <!-- ===== SCREEN: Lobby ===== -->
+    <section id="screen-lobby" class="screen">
+      <h2 class="lobby-greeting" id="lobby-greeting"></h2>
+      <div class="lobby-players">
+        <div class="player-badge">
+          <div class="player-avatar p1" id="lobby-avatar-1"></div>
+          <span class="player-badge-name" id="lobby-player1"></span>
+        </div>
+        <div class="lobby-heart">&#10084;&#65039;</div>
+        <div class="player-badge">
+          <div class="player-avatar p2" id="lobby-avatar-2"></div>
+          <span class="player-badge-name" id="lobby-player2"></span>
+        </div>
+      </div>
+      <p class="lobby-description">
+        You'll go through 12 rounds of questions together. Some fun, some deep, all real.
+        Ready to discover how much you have in common?
+      </p>
+      <button id="btn-start-game" class="btn btn-primary">Let's Begin</button>
+    </section>
+
+    <!-- ===== SCREEN: Round Intro ===== -->
+    <section id="screen-round-intro" class="screen">
+      <span class="intro-round-number"></span>
+      <span class="intro-type-icon"></span>
+      <h2 class="intro-type-name"></h2>
+    </section>
+
+    <!-- ===== SCREEN: This or That ===== -->
+    <section id="screen-this-or-that" class="screen">
+      <h2 class="round-question"></h2>
+      <div class="option-grid">
+        <button class="option-card option-a">
+          <span class="option-emoji"></span>
+          <span class="option-text"></span>
+        </button>
+        <button class="option-card option-b">
+          <span class="option-emoji"></span>
+          <span class="option-text"></span>
+        </button>
+      </div>
+      <div class="waiting-indicator hidden">
+        <span>Waiting for <span class="waiting-name"></span></span>
+        <div class="waiting-dots">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SCREEN: Would You Rather ===== -->
+    <section id="screen-would-you-rather" class="screen">
+      <h2 class="round-question"></h2>
+      <div class="wyr-grid">
+        <button class="wyr-card option-a">
+          <div class="wyr-text"></div>
+          <div class="wyr-desc"></div>
+        </button>
+        <button class="wyr-card option-b">
+          <div class="wyr-text"></div>
+          <div class="wyr-desc"></div>
+        </button>
+      </div>
+      <div class="waiting-indicator hidden">
+        <span>Waiting for <span class="waiting-name"></span></span>
+        <div class="waiting-dots">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SCREEN: Deep Question ===== -->
+    <section id="screen-deep-question" class="screen">
+      <h2 class="round-question"></h2>
+      <textarea class="deep-textarea" placeholder="Share your thoughts..." maxlength="500"></textarea>
+      <button class="deep-submit btn btn-primary">Share my answer</button>
+      <div class="waiting-indicator hidden">
+        <span>Waiting for <span class="waiting-name"></span></span>
+        <div class="waiting-dots">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SCREEN: Guess Answer ===== -->
+    <section id="screen-guess-answer" class="screen">
+      <span class="guess-role"></span>
+      <h2 class="round-question"></h2>
+      <div class="guess-options"></div>
+      <div class="guess-free-text hidden"></div>
+      <div class="waiting-indicator hidden">
+        <span>Waiting for <span class="waiting-name"></span></span>
+        <div class="waiting-dots">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SCREEN: Reveal ===== -->
+    <section id="screen-reveal" class="screen">
+      <h3 class="reveal-title">The Reveal</h3>
+      <div class="reveal-cards">
+        <div class="reveal-card reveal-card-1">
+          <div class="reveal-name"></div>
+          <div class="reveal-answer"></div>
+        </div>
+        <div class="reveal-card reveal-card-2">
+          <div class="reveal-name"></div>
+          <div class="reveal-answer"></div>
+        </div>
+      </div>
+      <div class="reveal-message"></div>
+      <button class="reveal-next btn btn-primary">Next Round</button>
+    </section>
+
+    <!-- ===== SCREEN: Summary ===== -->
+    <section id="screen-summary" class="screen">
+      <span class="summary-label">Your Compatibility</span>
+      <div class="summary-score">0%</div>
+      <div class="summary-stats">
+        <div class="summary-stat stat-matches"></div>
+        <div class="summary-stat stat-guesses"></div>
+      </div>
+      <div class="summary-highlight hidden"></div>
+      <p class="summary-closing"></p>
+      <button id="btn-play-again" class="btn btn-secondary">Play Again</button>
+    </section>
+
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="toast"></div>
+
+  <!-- App scripts -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
