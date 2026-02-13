@@ -50,9 +50,9 @@ export const QUESTIONS = {
     },
     {
       id: "tot_09",
-      question: "Call or Text?",
-      optionA: { text: "Call", emoji: "\ud83d\udcde" },
-      optionB: { text: "Text", emoji: "\ud83d\udcac" }
+      question: "Sunrise or Sunset?",
+      optionA: { text: "Sunrise", emoji: "🌅" },
+      optionB: { text: "Sunset", emoji: "🌇" }
     },
     {
       id: "tot_10",
@@ -80,9 +80,9 @@ export const QUESTIONS = {
     },
     {
       id: "tot_14",
-      question: "Summer wedding or Winter wedding?",
-      optionA: { text: "Summer wedding", emoji: "\ud83c\udf3b" },
-      optionB: { text: "Winter wedding", emoji: "\u2744\ufe0f" }
+      question: "Fancy Wedding or Simple Wedding?",
+      optionA: { text: "Fancy Wedding", emoji: "👑" },
+      optionB: { text: "Simple Wedding", emoji: "🌿" }
     },
     {
       id: "tot_15",

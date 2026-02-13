@@ -3,7 +3,8 @@ import {
   createRoom, joinRoom, submitAnswer, markRevealed,
   advanceRound, startGame, finishGame, setupPresence,
   listenToRoom, listenToPlayers, listenToRound, listenToStatus,
-  listenToGameConfig, setRoundPhase, submitGuessJudgment
+  listenToGameConfig, setRoundPhase, submitGuessJudgment,
+  submitReaction, listenToReactions, submitComment
 } from './game-state.js';
 import {
   generateRoundPlan, getQuestionById, getRoundTypeName,
@@ -13,7 +14,8 @@ import {
   showScreen, renderThisOrThat, renderWouldYouRather,
   renderDeepQuestion, renderGuessMyAnswer, renderReveal,
   renderJudgmentButtons, renderSummary, showToast,
-  updateRoundIndicator, hideRoundIndicator
+  updateRoundIndicator, hideRoundIndicator,
+  startTimer, clearTimer, renderReactions, showPartnerReaction
 } from './ui.js';
 
 // ========== App State ==========
@@ -32,6 +34,7 @@ let roomUnsubscribe = null;
 let hasSubmittedAnswer = false;
 let isShowingReveal = false;
 let hasShownIntro = false;
+let reactionUnsubscribe = null;
 
 // ========== Initialization ==========
 async function init() {
@@ -110,6 +113,7 @@ function cleanupListeners() {
   if (statusUnsubscribe) { statusUnsubscribe(); statusUnsubscribe = null; }
   if (playersUnsubscribe) { playersUnsubscribe(); playersUnsubscribe = null; }
   if (roomUnsubscribe) { roomUnsubscribe(); roomUnsubscribe = null; }
+  if (reactionUnsubscribe) { reactionUnsubscribe(); reactionUnsubscribe = null; }
 }
 
 // ========== Event Listeners ==========
@@ -361,6 +365,9 @@ function startPlaying() {
       hasSubmittedAnswer = false;
       isShowingReveal = false;
       hasShownIntro = false;
+      clearTimer();
+      // Clean up reaction listener from previous round
+      if (reactionUnsubscribe) { reactionUnsubscribe(); reactionUnsubscribe = null; }
     }
 
     processRound(data, roundIdx);
@@ -436,6 +443,7 @@ function showQuestionScreen(round, question, roundIndex, p1Name, p2Name) {
   const type = round.type;
   const onSubmit = async (answer) => {
     hasSubmittedAnswer = true;
+    clearTimer();
     try {
       await submitAnswer(roomCode, roundIndex, playerSlot, answer);
       console.log('[Sangame] Answer submitted successfully');
@@ -446,8 +454,52 @@ function showQuestionScreen(round, question, roundIndex, p1Name, p2Name) {
     }
   };
 
+  // Timer durations: deep questions get more time
+  const timerSeconds = type === "deepQuestion" ? 90 : 30;
+
+  const onTimerExpire = () => {
+    if (hasSubmittedAnswer) return;
+    console.log('[Sangame] Timer expired, auto-submitting');
+    showToast("Time's up!", 'error');
+
+    // Auto-submit a default answer based on round type
+    if (type === "thisOrThat") {
+      // Check if a choice was already made (comment box visible)
+      const commentBox = document.querySelector('.tot-comment-box');
+      const commentInput = document.querySelector('.tot-comment-input');
+      if (commentBox && !commentBox.classList.contains('hidden')) {
+        // Choice was made, just submit with whatever comment is there
+        const comment = commentInput?.value?.trim();
+        if (comment) {
+          submitComment(roomCode, roundIndex, playerSlot, comment);
+        }
+        // The onSubmit for the selected choice will be triggered by the button logic
+        // But since timer expired, we need to simulate the submit
+        const selectedBtn = document.querySelector('.option-card.selected');
+        const choice = selectedBtn?.classList.contains('option-a') ? "A" : "B";
+        onSubmit(choice || "A");
+      } else {
+        onSubmit(Math.random() < 0.5 ? "A" : "B");
+      }
+    } else if (type === "wouldYouRather") {
+      onSubmit(Math.random() < 0.5 ? "A" : "B");
+    } else if (type === "deepQuestion") {
+      onSubmit("(ran out of time ⏰)");
+    } else if (type === "guessMyAnswer") {
+      if (question.inputType === "choice") {
+        // Pick first option
+        onSubmit(question.options[0]);
+      } else {
+        onSubmit("(ran out of time ⏰)");
+      }
+    }
+  };
+
   if (type === "thisOrThat") {
-    renderThisOrThat(question, onSubmit);
+    const onComment = (comment) => {
+      submitComment(roomCode, roundIndex, playerSlot, comment);
+    };
+    renderThisOrThat(question, onSubmit, onComment);
     showScreen('screen-this-or-that');
   } else if (type === "wouldYouRather") {
     renderWouldYouRather(question, onSubmit);
@@ -460,9 +512,13 @@ function showQuestionScreen(round, question, roundIndex, p1Name, p2Name) {
     renderGuessMyAnswer(question, isSubject, partnerName, onSubmit);
     showScreen('screen-guess-answer');
   }
+
+  // Start the countdown timer after showing the question
+  startTimer(timerSeconds, onTimerExpire);
 }
 
 async function showRevealScreen(round, question, data, roundIndex) {
+  clearTimer();
   const p1Name = data.players?.player1?.name || "Player 1";
   const p2Name = data.players?.player2?.name || "Player 2";
   const a1 = round.answers?.player1;
@@ -486,6 +542,7 @@ async function showRevealScreen(round, question, data, roundIndex) {
     showScreen('screen-reveal');
 
     if (needsJudgment && isSubject) {
+      setupReactions(roundIndex);
       renderJudgmentButtons(document.getElementById('screen-reveal'), async (correct) => {
         await submitGuessJudgment(roomCode, roundIndex, correct);
         const updatedNextBtn = renderReveal(
@@ -493,12 +550,14 @@ async function showRevealScreen(round, question, data, roundIndex) {
           { subjectPlayer: round.subjectPlayer, correct }
         );
         setupNextButton(updatedNextBtn, roundIndex, totalRounds);
+        setupReactions(roundIndex);
       });
       return;
     } else if (needsJudgment && !isSubject) {
       if (nextBtn) nextBtn.classList.add('hidden');
       const revealContainer = document.getElementById('screen-reveal');
       revealContainer.querySelector('.reveal-message').textContent = `Waiting for ${partnerName} to judge...`;
+      setupReactions(roundIndex);
       return;
     } else if (isChoiceQuestion) {
       const matched = subjectAnswer === guesserAnswer;
@@ -508,12 +567,33 @@ async function showRevealScreen(round, question, data, roundIndex) {
     }
 
     if (nextBtn) setupNextButton(nextBtn, roundIndex, totalRounds);
+    setupReactions(roundIndex);
     return;
   }
 
-  const nextBtn = renderReveal(round.type, question, a1, a2, p1Name, p2Name);
+  const comments = round.comments || null;
+  const nextBtn = renderReveal(round.type, question, a1, a2, p1Name, p2Name, undefined, comments);
   showScreen('screen-reveal');
   if (nextBtn) setupNextButton(nextBtn, roundIndex, totalRounds);
+  setupReactions(roundIndex);
+}
+
+function setupReactions(roundIndex) {
+  const revealContainer = document.getElementById('screen-reveal');
+
+  // Render the emoji reaction bar
+  renderReactions(revealContainer, (emoji) => {
+    console.log('[Sangame] Reacting with:', emoji);
+    submitReaction(roomCode, roundIndex, playerSlot, emoji);
+  });
+
+  // Listen for partner's reactions in real-time
+  const theirSlot = playerSlot === "player1" ? "player2" : "player1";
+  reactionUnsubscribe = listenToReactions(roomCode, roundIndex, (reactions) => {
+    if (reactions && reactions[theirSlot]) {
+      showPartnerReaction(revealContainer, reactions[theirSlot], partnerName);
+    }
+  });
 }
 
 function setupNextButton(ignoredRef, roundIndex, totalRounds) {
@@ -549,6 +629,7 @@ function setupNextButton(ignoredRef, roundIndex, totalRounds) {
 }
 
 function showSummaryScreen(scoring) {
+  clearTimer();
   hideRoundIndicator();
   const p1Name = roomData?.players?.player1?.name || "Player 1";
   const p2Name = roomData?.players?.player2?.name || "Player 2";

@@ -22,6 +22,12 @@
     <!-- Round Indicator (fixed top bar) -->
     <div id="round-indicator" class="hidden"></div>
 
+    <!-- Timer Bar (below round indicator) -->
+    <div id="timer-bar" class="hidden">
+      <div id="timer-fill"></div>
+      <span id="timer-text"></span>
+    </div>
+
     <!-- ===== SCREEN: Landing ===== -->
     <section id="screen-landing" class="screen screen-active">
       <div class="landing-heart">&#10084;&#65039;</div>
@@ -112,6 +118,10 @@
           <span class="option-emoji"></span>
           <span class="option-text"></span>
         </button>
+      </div>
+      <div class="tot-comment-box hidden">
+        <input class="tot-comment-input" type="text" placeholder="Add a reason why? (optional)" maxlength="100" autocomplete="off">
+        <button class="tot-comment-submit btn btn-primary btn-sm">Lock it in</button>
       </div>
       <div class="waiting-indicator hidden">
         <span>Waiting for <span class="waiting-name"></span></span>

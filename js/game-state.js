@@ -179,3 +179,26 @@ export async function submitGuessJudgment(roomCode, roundIndex, correct) {
     correct
   );
 }
+
+// Submit an emoji reaction on the reveal screen
+export async function submitComment(roomCode, roundIndex, playerSlot, comment) {
+  await set(
+    ref(db, `rooms/${roomCode}/rounds/${roundIndex}/comments/${playerSlot}`),
+    comment
+  );
+}
+
+export async function submitReaction(roomCode, roundIndex, playerSlot, emoji) {
+  await set(
+    ref(db, `rooms/${roomCode}/rounds/${roundIndex}/reactions/${playerSlot}`),
+    emoji
+  );
+}
+
+// Listen to reactions for a specific round
+export function listenToReactions(roomCode, roundIndex, callback) {
+  const reactionsRef = ref(db, `rooms/${roomCode}/rounds/${roundIndex}/reactions`);
+  return onValue(reactionsRef, (snap) => {
+    callback(snap.val());
+  });
+}

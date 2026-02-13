@@ -1,4 +1,5 @@
 let currentScreen = null;
+let activeTimer = null;
 
 export function showScreen(screenId) {
   if (currentScreen) {
@@ -18,12 +19,15 @@ export function showScreen(screenId) {
   }, currentScreen ? 200 : 0);
 }
 
-export function renderThisOrThat(question, onSelect) {
+export function renderThisOrThat(question, onSelect, onComment) {
   const container = document.getElementById('screen-this-or-that');
   container.querySelector('.round-question').textContent = question.question;
 
   const btnA = container.querySelector('.option-a');
   const btnB = container.querySelector('.option-b');
+  const commentBox = container.querySelector('.tot-comment-box');
+  const commentInput = container.querySelector('.tot-comment-input');
+  const commentSubmit = container.querySelector('.tot-comment-submit');
 
   btnA.querySelector('.option-emoji').textContent = question.optionA.emoji;
   btnA.querySelector('.option-text').textContent = question.optionA.text;
@@ -34,14 +38,38 @@ export function renderThisOrThat(question, onSelect) {
   btnA.classList.remove('selected', 'disabled');
   btnB.classList.remove('selected', 'disabled');
   container.querySelector('.waiting-indicator').classList.add('hidden');
+  commentBox.classList.add('hidden');
+  commentInput.value = '';
+
+  let selectedChoice = null;
 
   const handler = (choice, btn, otherBtn) => {
+    selectedChoice = choice;
     btn.classList.add('selected');
     otherBtn.classList.add('disabled');
     btn.removeEventListener('click', btn._handler);
     otherBtn.removeEventListener('click', otherBtn._handler);
+
+    // Show comment box instead of immediately submitting
+    commentBox.classList.remove('hidden');
+    commentInput.focus();
+  };
+
+  // Submit with optional comment
+  const doSubmit = () => {
+    if (!selectedChoice) return;
+    const comment = commentInput.value.trim();
+    commentBox.classList.add('hidden');
     container.querySelector('.waiting-indicator').classList.remove('hidden');
-    onSelect(choice);
+    onSelect(selectedChoice);
+    if (comment && onComment) {
+      onComment(comment);
+    }
+  };
+
+  commentSubmit.onclick = doSubmit;
+  commentInput.onkeydown = (e) => {
+    if (e.key === 'Enter') doSubmit();
   };
 
   btnA._handler = () => handler("A", btnA, btnB);
@@ -170,7 +198,7 @@ export function renderGuessMyAnswer(question, isSubject, partnerName, onSubmit) 
   }
 }
 
-export function renderReveal(roundType, question, answer1, answer2, player1Name, player2Name, extra) {
+export function renderReveal(roundType, question, answer1, answer2, player1Name, player2Name, extra, comments) {
   const container = document.getElementById('screen-reveal');
 
   const card1 = container.querySelector('.reveal-card-1');
@@ -199,6 +227,25 @@ export function renderReveal(roundType, question, answer1, answer2, player1Name,
 
   card1.querySelector('.reveal-answer').textContent = display1;
   card2.querySelector('.reveal-answer').textContent = display2;
+
+  // Show comments if they exist
+  const existingComments = container.querySelectorAll('.reveal-comment');
+  existingComments.forEach(el => el.remove());
+
+  if (comments) {
+    if (comments.player1) {
+      const commentEl = document.createElement('div');
+      commentEl.className = 'reveal-comment';
+      commentEl.textContent = `"${comments.player1}"`;
+      card1.appendChild(commentEl);
+    }
+    if (comments.player2) {
+      const commentEl = document.createElement('div');
+      commentEl.className = 'reveal-comment';
+      commentEl.textContent = `"${comments.player2}"`;
+      card2.appendChild(commentEl);
+    }
+  }
 
   // Match or not?
   const matched = answer1 === answer2;
@@ -364,4 +411,100 @@ export function updateRoundIndicator(current, total) {
 export function hideRoundIndicator() {
   const el = document.getElementById('round-indicator');
   if (el) el.classList.add('hidden');
+}
+
+// ========== Timer ==========
+
+export function startTimer(seconds, onExpire) {
+  clearTimer();
+  const bar = document.getElementById('timer-bar');
+  const fill = document.getElementById('timer-fill');
+  const text = document.getElementById('timer-text');
+  if (!bar || !fill || !text) return;
+
+  bar.classList.remove('hidden');
+  fill.style.transition = 'none';
+  fill.style.width = '100%';
+  fill.classList.remove('timer-warning');
+  text.textContent = seconds;
+  text.classList.remove('timer-warning-text');
+
+  // Force reflow then animate
+  fill.offsetWidth;
+  fill.style.transition = `width ${seconds}s linear`;
+  fill.style.width = '0%';
+
+  let remaining = seconds;
+  activeTimer = setInterval(() => {
+    remaining--;
+    text.textContent = remaining;
+    if (remaining <= 5) {
+      fill.classList.add('timer-warning');
+      text.classList.add('timer-warning-text');
+    }
+    if (remaining <= 0) {
+      clearTimer();
+      onExpire();
+    }
+  }, 1000);
+}
+
+export function clearTimer() {
+  if (activeTimer) {
+    clearInterval(activeTimer);
+    activeTimer = null;
+  }
+  const bar = document.getElementById('timer-bar');
+  if (bar) bar.classList.add('hidden');
+}
+
+// ========== Emoji Reactions ==========
+
+export function renderReactions(container, onReact) {
+  // Remove existing reaction bar if any
+  const existing = container.querySelector('.reaction-bar');
+  if (existing) existing.remove();
+
+  const emojis = ['😂', '🥰', '🤔', '😮', '🔥', '💀'];
+
+  const bar = document.createElement('div');
+  bar.className = 'reaction-bar';
+
+  emojis.forEach(emoji => {
+    const btn = document.createElement('button');
+    btn.className = 'reaction-btn';
+    btn.textContent = emoji;
+    btn.addEventListener('click', () => {
+      // Highlight selected
+      bar.querySelectorAll('.reaction-btn').forEach(b => b.classList.remove('reaction-selected'));
+      btn.classList.add('reaction-selected');
+      onReact(emoji);
+    });
+    bar.appendChild(btn);
+  });
+
+  // Insert before the next button
+  const nextBtn = container.querySelector('.reveal-next');
+  if (nextBtn) {
+    nextBtn.before(bar);
+  } else {
+    container.appendChild(bar);
+  }
+}
+
+export function showPartnerReaction(container, emoji, partnerName) {
+  let bubble = container.querySelector('.partner-reaction');
+  if (!bubble) {
+    bubble = document.createElement('div');
+    bubble.className = 'partner-reaction';
+    const bar = container.querySelector('.reaction-bar');
+    if (bar) {
+      bar.after(bubble);
+    } else {
+      container.appendChild(bubble);
+    }
+  }
+  bubble.textContent = `${partnerName}: ${emoji}`;
+  bubble.classList.add('reaction-pop');
+  setTimeout(() => bubble.classList.remove('reaction-pop'), 300);
 }
