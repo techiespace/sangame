@@ -461,9 +461,11 @@ export function clearTimer() {
 // ========== Emoji Reactions ==========
 
 export function renderReactions(container, onReact) {
-  // Remove existing reaction bar if any
+  // Remove existing reaction bar and partner bubble from previous round
   const existing = container.querySelector('.reaction-bar');
   if (existing) existing.remove();
+  const existingBubble = container.querySelector('.partner-reaction');
+  if (existingBubble) existingBubble.remove();
 
   const emojis = ['😂', '🥰', '🤔', '😮', '🔥', '💀'];
 
